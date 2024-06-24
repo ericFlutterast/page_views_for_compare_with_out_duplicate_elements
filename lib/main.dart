@@ -14,7 +14,7 @@ void main() {
 final List<Color> _colors = [
   Colors.deepOrange,
   Colors.pink,
-  for (int i = 0; i < 1; i++)
+  for (int i = 0; i < 4; i++)
     Color.fromRGBO(Random().nextInt(255), Random().nextInt(255), Random().nextInt(255), 1)
 ];
 
@@ -56,229 +56,66 @@ class _MyAppState extends State<MyApp> {
 
     _leftController = PageController(initialPage: 1000 - 1000 % _rightOffers.length);
     _rightController = PageController(initialPage: 1000 - 1000 % _rightOffers.length);
+  }
 
-    _showCurrentState();
+  Offer _replaceSimilarElementRight({
+    required final int index,
+    required List<Offer> handleList,
+    required List<Offer> changedList,
+    required Offer removedElement,
+  }) {
+    final indexToInsertSimilarElement = changedList.indexOf(handleList[index]);
+    changedList[indexToInsertSimilarElement] = removedElement;
+    return handleList[index];
   }
 
   //left handler handle right
-  void _leftOffersHandler(int leftIndex) {
-    print('_leftOffersHandler');
-    //
-    // //1
-    // if (currentRightIndex == 0) {
-    //   setState(() {
-    //     _rightOffers.add(removedFromRight);
-    //
-    //     removedFromRight = _leftOffers[leftIndex];
-    //     _rightOffers.remove(removedFromRight);
-    //
-    //     insertionSort(
-    //       _rightOffers,
-    //       start: 1,
-    //       end: _leftOffers.length,
-    //       compare: (a, b) {
-    //         if (a.indexForShow == 0) {
-    //           return 1;
-    //         }
-    //
-    //         return a.indexForShow.compareTo(b.indexForShow);
-    //       },
-    //     );
-    //   });
-    //
-    //   if (_rightOffers.contains(removedFromRight)) {
-    //     throw Exception('Содержит элемент который должен был удалится _leftOffersHandler() condition 1');
-    //   }
-    //
-    //   print(1);
-    //   _showCurrentState();
-    //   return;
-    // }
-    //
-    // //2
-    // if (currentRightIndex == _rightOffers.length - 1) {
-    //   setState(() {
-    //     _rightOffers = [removedFromRight, ..._rightOffers];
-    //
-    //     removedFromRight = _leftOffers[leftIndex];
-    //     _rightOffers.remove(removedFromRight);
-    //
-    //     insertionSort(
-    //       _rightOffers,
-    //       start: 0,
-    //       end: _rightOffers.length - 1,
-    //       compare: (a, b) => a.indexForShow.compareTo(b.indexForShow),
-    //     );
-    //   });
-    //
-    //   if (_rightOffers.contains(removedFromRight)) {
-    //     throw Exception('Содержит элемент который должен был удалится _leftOffersHandler() condition 2');
-    //   }
-    //
-    //   print(2);
-    //   _showCurrentState();
-    //   return;
-    // }
+  ({List<Offer> handleList, List<Offer> changedList}) _restoreCorrectSequence({
+    required final int index,
+    required final int currentShowElementIndex,
+    required final List<Offer> handleList, //left
+    required List<Offer> changedList, //right
+  }) {
+    //сохраняем позициию отоброжаемого элемента и
+    // сам элемент для востановления его позиции после сортировки
+    final Offer currentShowElement = changedList[currentShowElementIndex];
+    //сортировака для восстановдения правильной последжовательности
+    changedList.sort((a, b) => a.indexForShow.compareTo(b.indexForShow));
 
-    //3 currentRightIndex > 0 && currentRightIndex < _rightOffers.length - 1
-    if (true) {
-      setState(() {
-        _showCurrentState();
-
-        final int currentShowElementIndex = currentRightIndex;
-        final Offer currentShowElement = _rightOffers[currentShowElementIndex];
-
-        final putIndex = _rightOffers.indexOf(_leftOffers[leftIndex]);
-        _rightOffers[putIndex] = removedFromRight;
-        removedFromRight = _leftOffers[leftIndex];
-
-        _showCurrentState();
-
-        _rightOffers.sort((a, b) => a.indexForShow.compareTo(b.indexForShow));
-
-        if (_rightOffers[currentShowElementIndex].indexForShow == currentShowElement.indexForShow) {
-          return;
-        }
-
-        //rename //список для востановления позиции отображения
-        final List<Offer> fixedPositionRightOffers = [];
-
-        //rename// нидекс элемента который отображается в отсортированном массиве
-        final currentShowElementAfterSort = _rightOffers.indexOf(currentShowElement);
-
-        //rename
-        final int end = _rightOffers.length; //конец списка отображаемых элементов
-        //начало элемента с которых нужно начать вставку чтобы востановить позцию
-        int start = currentShowElementAfterSort - currentShowElementIndex;
-
-        //если целевая позиции будет находиться слева от текущий позиции после сортировки,
-        //то в start получится отрицательное число поэтому делаем его положительным умнодая на -1
-        if (start < 0) {
-          rotate<Offer>(_rightOffers, start * -1);
-        } else {
-          //вставляем элементы в новый список
-          for (int i = start; i < end; i++) {
-            fixedPositionRightOffers.add(_rightOffers.removeAt(start));
-          }
-
-          //в конец ставляем все что осталось чтобы сохранить последовательность в беконечом пейдж вью
-          fixedPositionRightOffers.addAll(_rightOffers);
-
-          //присвоить _leftOffers новый список
-          _rightOffers = fixedPositionRightOffers;
-        }
-
-        print(3);
-        _showCurrentState();
-      });
+    //если элемент в нужной позиции
+    if (changedList[currentShowElementIndex].indexForShow == currentShowElement.indexForShow) {
+      return (handleList: handleList, changedList: changedList);
     }
-  }
 
-  //right handler handle left
-  void _rightOffersHandler(int rightIndex) {
-    print('_leftOffersHandler');
-    //
-    // //1
-    // if (currentLeftIndex == 0) {
-    //   setState(() {
-    //     _leftOffers.add(removedFromLeft);
-    //
-    //     removedFromLeft = _rightOffers[rightIndex];
-    //     _leftOffers.remove(removedFromLeft);
-    //
-    //     insertionSort(
-    //       _leftOffers,
-    //       start: 1,
-    //       end: _leftOffers.length,
-    //       compare: (a, b) {
-    //         if (a.indexForShow == 0) {
-    //           return 1;
-    //         }
-    //         return a.indexForShow.compareTo(b.indexForShow);
-    //       },
-    //     );
-    //   });
-    //
-    //   print(1);
-    //   _showCurrentState();
-    //   return;
-    // }
-    //
-    // //2
-    // if (currentLeftIndex == _leftOffers.length - 1) {
-    //   setState(() {
-    //     _leftOffers = [removedFromLeft, ..._leftOffers];
-    //
-    //     removedFromLeft = _rightOffers[rightIndex];
-    //     _leftOffers.remove(removedFromLeft);
-    //
-    //     insertionSort(
-    //       _leftOffers,
-    //       start: 0,
-    //       end: _leftOffers.length - 1,
-    //       compare: (a, b) => a.indexForShow.compareTo(b.indexForShow),
-    //     );
-    //   });
-    //
-    //   print(2);
-    //   _showCurrentState();
-    //   return;
-    // }
+    //rename //список для востановления позиции отображения
+    final List<Offer> fixedPositionRightOffers = [];
 
-    //3 currentLeftIndex > 0 && currentLeftIndex < _leftOffers.length - 1
-    if (true) {
-      setState(() {
-        _showCurrentState();
+    //rename// нидекс элемента который отображается в отсортированном массиве
+    final currentShowElementAfterSort = changedList.indexOf(currentShowElement);
 
-        // сохраняем позицию отображаемого элемента чтобы его востановсить
-        final int currentShowElementIndex = currentLeftIndex;
-        //отображаемый элемент
-        final Offer currentShowElement = _leftOffers[currentShowElementIndex];
+    //rename
+    final int end = changedList.length; //конец списка отображаемых элементов
+    //начало элемента с которых нужно начать вставку чтобы востановить позцию
+    int start = currentShowElementAfterSort - currentShowElementIndex;
 
-        final putIndex = _leftOffers.indexOf(_rightOffers[rightIndex]);
-        _leftOffers[putIndex] = removedFromLeft;
-        removedFromLeft = _rightOffers[rightIndex];
+    //если целевая позиции будет находиться слева от текущий позиции после сортировки,
+    //то в start получится отрицательное число поэтому делаем его положительным умнодая на -1
+    if (start < 0) {
+      rotate<Offer>(changedList, start * -1);
+    } else {
+      //вставляем элементы в новый список
+      for (int i = start; i < end; i++) {
+        fixedPositionRightOffers.add(changedList.removeAt(start));
+      }
 
-        _showCurrentState();
+      //в конец ставляем все что осталось чтобы сохранить последовательность в беконечом пейдж вью
+      fixedPositionRightOffers.addAll(changedList);
 
-        _leftOffers.sort((a, b) => a.indexForShow.compareTo(b.indexForShow));
-
-        if (_leftOffers[currentShowElementIndex].indexForShow == currentShowElement.indexForShow) {
-          return;
-        }
-
-        //rename //список для востановления позиции отображения
-        final List<Offer> fixedPositionLeftOffers = [];
-
-        //rename// нидекс элемента который отображается в отсортированном массиве
-        final currentShowElementAfterSort = _leftOffers.indexOf(currentShowElement);
-
-        //rename
-        final int end = _leftOffers.length; //конец списка отображаемых элементов
-        //начало элемента с которых нужно начать вставку чтобы востановить позцию
-        int start = currentShowElementAfterSort - currentShowElementIndex;
-
-        //если целевая позиции будет находиться слева от текущий позиции после сортировки,
-        //то в start получится отрицательное число поэтому делаем его положительным умнодая на -1
-        if (start < 0) {
-          rotate<Offer>(_leftOffers, start * -1);
-        } else {
-          //вставляем элементы в новый список
-          for (int i = start; i < end; i++) {
-            fixedPositionLeftOffers.add(_leftOffers.removeAt(start));
-          }
-
-          //в конец ставляем все что осталось чтобы сохранить последовательность в беконечом пейдж вью
-          fixedPositionLeftOffers.addAll(_leftOffers);
-
-          //присвоить _leftOffers новый список
-          _leftOffers = fixedPositionLeftOffers;
-        }
-      });
-
-      print(3);
-      _showCurrentState();
+      //присвоить _leftOffers новый список
+      changedList = fixedPositionRightOffers;
     }
+
+    return (handleList: handleList, changedList: changedList);
   }
 
   @override
@@ -294,11 +131,27 @@ class _MyAppState extends State<MyApp> {
                   child: PageView.builder(
                     controller: _leftController,
                     onPageChanged: (index) {
+                      //заносим в противоположный список элемент который теперь отображается в списке
+                      final removedRight = _replaceSimilarElementRight(
+                        index: index % _leftOffers.length,
+                        handleList: _leftOffers,
+                        changedList: _rightOffers,
+                        removedElement: removedFromRight,
+                      );
+
+                      final res = _restoreCorrectSequence(
+                        index: index % _leftOffers.length,
+                        currentShowElementIndex: currentRightIndex,
+                        handleList: _leftOffers,
+                        changedList: _rightOffers,
+                      );
+
                       setState(() {
                         currentLeftIndex = index % _leftOffers.length;
+                        removedFromRight = removedRight;
+                        _leftOffers = res.handleList;
+                        _rightOffers = res.changedList;
                       });
-
-                      _leftOffersHandler(index % _leftOffers.length);
                     },
                     itemBuilder: (context, index) {
                       final item = _leftOffers[index % _leftOffers.length];
@@ -322,11 +175,29 @@ class _MyAppState extends State<MyApp> {
                   child: PageView.builder(
                     controller: _rightController,
                     onPageChanged: (index) {
+                      //заносим в противоположный список элемент который теперь отображается в списке
+                      final removedLeft = _replaceSimilarElementRight(
+                        index: index % _leftOffers.length,
+                        handleList: _rightOffers,
+                        changedList: _leftOffers,
+                        removedElement: removedFromLeft,
+                      );
+
+                      final res = _restoreCorrectSequence(
+                        index: index % _rightOffers.length,
+                        currentShowElementIndex: currentLeftIndex,
+                        handleList: _rightOffers,
+                        changedList: _leftOffers,
+                      );
+
                       setState(() {
                         currentRightIndex = index % _rightOffers.length;
+                        removedFromLeft = removedLeft;
+                        _rightOffers = res.handleList;
+                        _leftOffers = res.changedList;
                       });
 
-                      _rightOffersHandler(index % _rightOffers.length);
+                      //_rightOffersHandler(index % _rightOffers.length);
                     },
                     itemBuilder: (context, index) {
                       final item = _rightOffers[index % _rightOffers.length];
@@ -355,60 +226,19 @@ class _MyAppState extends State<MyApp> {
   }
 
   void rotate<T>(List<T> nums, int k) {
-    final List<T> temp = [];
-    final List<T> temp2 = [];
+    k %= nums.length;
 
-    if (k > nums.length) {
-      k %= nums.length;
-    }
+    List<T> result = [];
+    if (nums.length > 1 && k > 0) {
+      result = nums.getRange(nums.length - k, nums.length).toList();
 
-    for (int i = 0; i < nums.length; i++) {
-      if (i < nums.length - k) {
-        temp.add(nums[i]);
-        continue;
+      for (int i = 0; i < nums.length - k; i++) {
+        result.add(nums[i]);
       }
 
-      temp2.add(nums[i]);
+      nums.removeRange(0, nums.length);
+      nums.insertAll(0, result);
     }
-
-    int tempLengthCount = 0;
-    int tempLengthTwoCount = 0;
-    for (int i = 0; i < nums.length; i++) {
-      if (tempLengthTwoCount < temp2.length) {
-        nums[i] = temp2[tempLengthTwoCount];
-        tempLengthTwoCount++;
-        continue;
-      }
-
-      if (tempLengthCount < temp.length) {
-        nums[i] = temp[tempLengthCount];
-        tempLengthCount++;
-        continue;
-      }
-    }
-  }
-
-  //TODO:
-  void _showCurrentState() {
-    print('removedFromLeft: ${removedFromLeft.indexForShow}');
-    print('removedFromRight: ${removedFromRight.indexForShow}');
-
-    print('currentLeftIndex: $currentLeftIndex');
-    print('currentRightIndex: $currentRightIndex');
-
-    String a = '';
-    for (final item in _leftOffers) {
-      a += '${item.indexForShow} ';
-    }
-
-    String b = '';
-    for (final item in _rightOffers) {
-      b += '${item.indexForShow} ';
-    }
-
-    print('left = [$a]');
-    print('right = [$b]');
-    print('--------------------------------');
   }
 }
 
@@ -436,3 +266,45 @@ final class Offer {
     return other is Offer && other.runtimeType == runtimeType && other.indexForShow < indexForShow;
   }
 }
+
+//right handler handle left
+// void _rightOffersHandler(int rightIndex) {
+//   setState(() {
+//     // сохраняем позицию отображаемого элемента чтобы его востановсить
+//     final int currentShowElementIndex = currentLeftIndex;
+//     //отображаемый элемент
+//     final Offer currentShowElement = _leftOffers[currentShowElementIndex];
+//
+//     final putIndex = _leftOffers.indexOf(_rightOffers[rightIndex]);
+//     _leftOffers[putIndex] = removedFromLeft;
+//     removedFromLeft = _rightOffers[rightIndex];
+//
+//     _leftOffers.sort((a, b) => a.indexForShow.compareTo(b.indexForShow));
+//
+//     if (_leftOffers[currentShowElementIndex].indexForShow == currentShowElement.indexForShow) {
+//       return;
+//     }
+//     //rename //список для востановления позиции отображения
+//     final List<Offer> fixedPositionLeftOffers = [];
+//     //rename// нидекс элемента который отображается в отсортированном массиве
+//     final currentShowElementAfterSort = _leftOffers.indexOf(currentShowElement);
+//     //rename
+//     final int end = _leftOffers.length; //конец списка отображаемых элементов
+//     //начало элемента с которых нужно начать вставку чтобы востановить позцию
+//     int start = currentShowElementAfterSort - currentShowElementIndex;
+//     //если целевая позиции будет находиться слева от текущий позиции после сортировки,
+//     //то в start получится отрицательное число поэтому делаем его положительным умнодая на -1
+//     if (start < 0) {
+//       rotate<Offer>(_leftOffers, start * -1);
+//     } else {
+//       //вставляем элементы в новый список
+//       for (int i = start; i < end; i++) {
+//         fixedPositionLeftOffers.add(_leftOffers.removeAt(start));
+//       }
+//       //в конец ставляем все что осталось чтобы сохранить последовательность в беконечом пейдж вью
+//       fixedPositionLeftOffers.addAll(_leftOffers);
+//       //присвоить _leftOffers новый список
+//       _leftOffers = fixedPositionLeftOffers;
+//     }
+//   });
+// }
